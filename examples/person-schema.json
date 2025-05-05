@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Person Schema",
+  "description": "A schema representing a person with semantic tags for fake data generation",
+  "properties": {
+    "id": {
+      "type": "string",
+      "faker": "uuid",
+      "description": "Unique identifier for the person"
+    },
+    "firstName": {
+      "type": "string",
+      "faker": "firstName",
+      "description": "Person's first name"
+    },
+    "lastName": {
+      "type": "string",
+      "faker": "lastName",
+      "description": "Person's last name"
+    },
+    "email": {
+      "type": "string",
+      "faker": "email",
+      "description": "Person's email address"
+    },
+    "age": {
+      "type": "integer",
+      "minimum": 18,
+      "maximum": 80,
+      "faker": "age",
+      "description": "Person's age in years"
+    },
+    "address": {
+      "type": "object",
+      "description": "Person's address details",
+      "properties": {
+        "street": {
+          "type": "string",
+          "faker": "street",
+          "description": "Street address"
+        },
+        "city": {
+          "type": "string",
+          "faker": "city",
+          "description": "City name"
+        },
+        "state": {
+          "type": "string",
+          "faker": "state",
+          "description": "State or province"
+        },
+        "zipCode": {
+          "type": "string",
+          "faker": "zipCode",
+          "description": "Postal code"
+        },
+        "country": {
+          "type": "string",
+          "faker": "country",
+          "description": "Country name"
+        }
+      }
+    },
+    "phoneNumber": {
+      "type": "string",
+      "faker": "phoneNumber",
+      "description": "Person's phone number"
+    },
+    "company": {
+      "type": "string",
+      "faker": "company",
+      "description": "Person's company name"
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "Whether the person is active"
+    },
+    "registrationDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the person registered"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "maxItems": 5,
+      "description": "Tags associated with the person"
+    }
+  },
+  "required": ["id", "firstName", "lastName", "email", "age"]
+}

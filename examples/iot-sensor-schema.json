@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "IoT Sensor Data Schema",
+  "description": "A schema representing IoT sensor readings with semantic tags for fake data generation",
+  "properties": {
+    "deviceId": {
+      "type": "string",
+      "faker": "uuid",
+      "description": "Unique identifier for the IoT device"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when the reading was taken"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "faker": "latitude",
+          "description": "Latitude coordinate"
+        },
+        "longitude": {
+          "type": "number",
+          "faker": "longitude",
+          "description": "Longitude coordinate"
+        }
+      }
+    },
+    "readings": {
+      "type": "object",
+      "properties": {
+        "temperature": {
+          "type": "number",
+          "minimum": -20,
+          "maximum": 50,
+          "description": "Temperature reading in Celsius"
+        },
+        "humidity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "faker": "percentage",
+          "description": "Humidity percentage"
+        },
+        "pressure": {
+          "type": "number",
+          "minimum": 950,
+          "maximum": 1050,
+          "description": "Atmospheric pressure in hPa"
+        },
+        "batteryLevel": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "faker": "percentage",
+          "description": "Battery level percentage"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["online", "offline", "error", "maintenance"],
+      "description": "Current status of the device"
+    },
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["warning", "critical", "info"],
+            "description": "Type of alert"
+          },
+          "message": {
+            "type": "string",
+            "description": "Alert message"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time when the alert was triggered"
+          }
+        }
+      },
+      "description": "List of alerts from the device"
+    }
+  },
+  "required": ["deviceId", "timestamp", "readings"]
+}

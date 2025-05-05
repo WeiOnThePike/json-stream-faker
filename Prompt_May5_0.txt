@@ -1,0 +1,11 @@
+I would like to create a containerized Java program that generates fake data according to a Json schema file, enhanced with semantic tags. 
+The semantic tags provides if a data field contains name, address, phone, date, etc. A data field can be string, integer, float etc, including
+all the data types supported by standard json schema specification. The semantic tags are the ones supported by Java datafaker.net package. 
+Let's start with the commonly used ones first.
+
+The program does the follows:
+
+1. read a given Json schema file, and generate a stream of fake generated data, and stops generation according to specificed stopping config: (1) maximum number of messages (2) maximum time of generation (can also run indefinitely if not specified)
+2. send this stream to a Kafka cluster (with client configuration passed as file), and necessary throttling config controlling the throughput of generated data (batch size, interval etc.)
+3. add gradle build script and unit tests
+4. wrap the jar file into a docker container and provide shell scripts to run it from local machine
