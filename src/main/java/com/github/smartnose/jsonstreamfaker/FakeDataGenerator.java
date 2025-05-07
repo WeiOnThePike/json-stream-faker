@@ -119,7 +119,7 @@ public class FakeDataGenerator {
             case "company":
                 return faker.company().name();
             case "uuid":
-                return faker.uuid().uuid();
+                return faker.internet().uuid();
             case "ipv4":
                 return faker.internet().ipV4Address();
             case "ipv6":
@@ -190,16 +190,12 @@ public class FakeDataGenerator {
     }
     
     private Number generateSemanticNumber(String semanticTag) {
-        switch (semanticTag) {
-            case "latitude":
-                return faker.address().latitude();
-            case "longitude":
-                return faker.address().longitude();
-            case "percentage":
-                return faker.number().randomDouble(2, 0, 100);
-            default:
-                return faker.number().randomDouble(2, 0, 1000);
-        }
+        return switch (semanticTag) {
+            case "latitude" -> Float.parseFloat(faker.address().latitude());
+            case "longitude" -> Float.parseFloat(faker.address().longitude());
+            case "percentage" -> faker.number().randomDouble(2, 0, 100);
+            default -> faker.number().randomDouble(2, 0, 1000);
+        };
     }
     
     private Boolean generateBoolean(String semanticTag) {
