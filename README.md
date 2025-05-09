@@ -1,5 +1,8 @@
 # JSON Stream Faker
 
+## Why JSON Stream Faker?
+
+Working extensively with real-time, large-scale Machine Learning and Big Data systems often requires mocking diverse event data streams. JSON Stream Faker was developed to address this need by providing a convenient way to generate and continuously publish streams of JSON data with various schemas to a Kafka service. This facilitates crucial development and testing activities such as load testing and integration testing for your streaming applications.
 A containerized Java application for generating fake data according to JSON schemas with semantic tags. The tool can output data to Kafka, files, or the console.
 
 ## Features
