@@ -1,5 +1,7 @@
 # JSON Stream Faker
 
+Disclaimer: this repo is professionally vibe-coded. Please vibe-check the results, and kindly let me know if things don't work, by creating a GitHub issue.
+
 ## Why JSON Stream Faker?
 
 Working extensively with real-time, large-scale Machine Learning and Big Data systems often requires mocking diverse event data streams. JSON Stream Faker was developed to address this need by providing a convenient way to generate and continuously publish streams of JSON data with various schemas to a Kafka service. This facilitates crucial development and testing activities such as load testing and integration testing for your streaming applications.
