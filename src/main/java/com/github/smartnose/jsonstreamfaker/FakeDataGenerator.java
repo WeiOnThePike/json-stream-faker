@@ -1,6 +1,11 @@
 package com.github.smartnose.jsonstreamfaker;
 
 import net.datafaker.Faker;
+import org.apache.commons.math3.distribution.LogNormalDistribution;
+import org.apache.commons.math3.distribution.ParetoDistribution;
+// Consider if a specific RNG is needed for distributions, otherwise, they use their own.
+// import org.apache.commons.math3.random.RandomGenerator;
+// import org.apache.commons.math3.random.Well19937c;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -76,7 +81,8 @@ public class FakeDataGenerator {
     
     private String generateString(String semanticTag, Map<String, Object> constraints) {
         if (semanticTag != null) {
-            return generateSemanticString(semanticTag);
+            // Pass constraints to generateSemanticString
+            return generateSemanticString(semanticTag, constraints);
         }
         
         // Handle standard string constraints
@@ -91,9 +97,12 @@ public class FakeDataGenerator {
         return faker.lorem().characters(minLength, maxLength);
     }
     
-    private String generateSemanticString(String semanticTag) {
+    // Modified to accept constraints for skewed_id
+    private String generateSemanticString(String semanticTag, Map<String, Object> constraints) {
         // Map semantic tags to datafaker methods
         switch (semanticTag) {
+            case "skewed_id":
+                return generateSkewedIdValue(constraints);
             case "name":
                 return faker.name().fullName();
             case "firstName":
@@ -230,5 +239,54 @@ public class FakeDataGenerator {
         }
         
         return generateObjectFromFields(properties);
+    }
+
+    private String generateSkewedIdValue(Map<String, Object> constraints) {
+        String distributionType = (String) constraints.get("skewedId_distribution");
+        String prefix = (String) constraints.getOrDefault("skewedId_prefix", "");
+
+        if (distributionType == null) {
+            System.err.println("Warning: 'skewedId_distribution' not specified for skewed_id. Falling back to random number.");
+            return prefix + faker.number().randomNumber(7, false); // Generate a positive long
+        }
+
+        long number;
+        // Note: The first argument to distribution constructors is a RandomGenerator.
+        // Passing null makes them create their own (typically Well19937c).
+        // If consistent seeding across runs for distributions is needed, a shared RandomGenerator instance would be required.
+        try {
+            switch (distributionType.toLowerCase()) {
+                case "log-normal":
+                    double scale = (double) constraints.getOrDefault("skewedId_logNormal_scale", 1.0); // Corresponds to 'mu' or mean of the log
+                    double shape = (double) constraints.getOrDefault("skewedId_logNormal_shape", 0.5); // Corresponds to 'sigma' or std dev of the log
+                    if (shape <= 0) {
+                        System.err.println("Warning: 'skewedId_logNormal_shape' (sigma) must be positive for LogNormalDistribution. Using default 0.5.");
+                        shape = 0.5;
+                    }
+                    LogNormalDistribution logNormal = new LogNormalDistribution(null, scale, shape);
+                    number = Math.max(1, (long) logNormal.sample());
+                    break;
+                case "pareto":
+                    double paretoScale = (double) constraints.getOrDefault("skewedId_pareto_scale", 1.0); // Location parameter 'xm'
+                    double paretoShape = (double) constraints.getOrDefault("skewedId_pareto_shape", 1.16); // Shape parameter 'alpha'
+                    if (paretoScale <= 0 || paretoShape <= 0) {
+                        System.err.println("Warning: 'skewedId_pareto_scale' (xm) and 'skewedId_pareto_shape' (alpha) must be positive for ParetoDistribution. Using defaults.");
+                        paretoScale = 1.0;
+                        paretoShape = 1.16;
+                    }
+                    ParetoDistribution pareto = new ParetoDistribution(null, paretoScale, paretoShape);
+                    number = Math.max(1, (long) pareto.sample()); // Pareto samples are >= scale, ensure it's at least 1 if scale is < 1.
+                    break;
+                default:
+                    System.err.println("Warning: Unknown distribution type for skewed_id: " + distributionType + ". Falling back to random number.");
+                    number = faker.number().randomNumber(7, false); // Generate a positive long
+                    break;
+            }
+        } catch (Exception e) {
+            System.err.println("Error generating skewed_id for distribution '" + distributionType + "': " + e.getMessage() + ". Falling back to random number.");
+            e.printStackTrace(); // For more detailed debugging
+            number = faker.number().randomNumber(7, false);
+        }
+        return prefix + number;
     }
 }

@@ -88,6 +88,30 @@ public class SchemaParser {
             }
             constraints.put("enum", enumValues);
         }
+
+        // Handle skewed_id configuration
+        if ("skewed_id".equals(semanticTag) && fieldNode.has("skewedIdConfig")) {
+            JsonNode configNode = fieldNode.get("skewedIdConfig");
+            if (configNode.has("distribution")) {
+                constraints.put("skewedId_distribution", configNode.get("distribution").asText());
+            }
+            if (configNode.has("prefix")) {
+                constraints.put("skewedId_prefix", configNode.get("prefix").asText());
+            }
+            // Distribution-specific parameters
+            if (configNode.has("logNormalScale")) {
+                constraints.put("skewedId_logNormal_scale", configNode.get("logNormalScale").asDouble());
+            }
+            if (configNode.has("logNormalShape")) { // As per plan, LogNormalDistribution in Commons Math uses scale (mean of log) and shape (std dev of log)
+                constraints.put("skewedId_logNormal_shape", configNode.get("logNormalShape").asDouble());
+            }
+            if (configNode.has("paretoScale")) { // Location parameter for Pareto
+                constraints.put("skewedId_pareto_scale", configNode.get("paretoScale").asDouble());
+            }
+            if (configNode.has("paretoShape")) { // Shape parameter (alpha) for Pareto
+                constraints.put("skewedId_pareto_shape", configNode.get("paretoShape").asDouble());
+            }
+        }
         
         List<JsonSchema.FieldDefinition> items = null;
         Map<String, JsonSchema.FieldDefinition> properties = null;
