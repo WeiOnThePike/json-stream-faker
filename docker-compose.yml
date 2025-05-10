@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  java-generator-service:
+    build:
+      context: ./packages/java-generator-service
+      # Dockerfile: Dockerfile # Assumes Dockerfile is named 'Dockerfile' in that context
+    ports:
+      - "8080:8080" # Assuming Javalin service runs on 8080, adjust if needed
+    volumes:
+      - ./examples:/app/examples # To provide schemas if needed by the service directly
+      # Add other necessary volumes, e.g., for Kafka config if used by Java service
+    environment:
+      # Define any environment variables needed by the Java service
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 # For remote debugging
+    # depends_on:
+      # - kafka # If Kafka is part of this compose setup
+
+  backend-api-service:
+    build:
+      context: ./packages/backend-api-service
+      # Dockerfile: Dockerfile # To be created
+    ports:
+      - "3000:3000" # Assuming NestJS service runs on 3000, adjust if needed
+    environment:
+      # Define environment variables for the backend
+      # e.g., LLM_API_KEY, JAVA_GENERATOR_URL=http://java-generator-service:8080
+      - JAVA_GENERATOR_URL=http://java-generator-service:8080
+    depends_on:
+      - java-generator-service
+    # volumes:
+      # - ./packages/backend-api-service/src:/app/src # For hot-reloading in dev, if configured
+
+  frontend-app:
+    build:
+      context: ./packages/frontend-app
+      # Dockerfile: Dockerfile # To be created
+    ports:
+      - "80:80" # Assuming frontend is served on port 80 by its dev server or a static server
+    environment:
+      # Define environment variables for the frontend
+      # e.g., REACT_APP_BACKEND_API_URL=http://localhost:3000/api/v1 (or whatever the external URL is)
+      - BACKEND_API_URL=http://backend-api-service:3000/api/v1 # Internal service name for Docker network
+    depends_on:
+      - backend-api-service
+    # volumes:
+      # - ./packages/frontend-app/src:/app/src # For hot-reloading in dev, if configured
+
+# Example Kafka and Zookeeper services (if you want to run them locally)
+#  zookeeper:
+#    image: confluentinc/cp-zookeeper:latest
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 2181
+#      ZOOKEEPER_TICK_TIME: 2000
+#    ports:
+#      - "2181:2181"
+
+#  kafka:
+#    image: confluentinc/cp-kafka:latest
+#    depends_on:
+#      - zookeeper
+#    ports:
+#      - "9092:9092" # External port for host access
+#      - "29092:29092" # Internal port for other Docker services
+#    environment:
+#      KAFKA_BROKER_ID: 1
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+#      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0

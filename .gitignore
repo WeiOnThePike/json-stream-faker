@@ -3,6 +3,8 @@
 
 # Log file
 *.log
+logs/
+!logs/.gitkeep # Allow keeping the logs directory if needed, but ignore its contents
 
 # BlueJ files
 *.ctxt
@@ -11,18 +13,59 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+# These are often too generic for a root gitignore in a monorepo,
+# better to handle them within specific package .gitignores if needed.
+# However, if you want to globally ignore them, keep them.
+# For now, I'll comment them out from the root.
+# *.jar
+# *.war
+# *.nar
+# *.ear
+# *.zip
+# *.tar.gz
+# *.rar
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
 
+# Gradle
 .gradle/
+# build/ # This should be handled per package, or use /packages/*/build/
+**/build/
+!packages/java-generator-service/build/libs/ # Example if you want to track specific built artifacts
+
+# IntelliJ
 .idea/
-build
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# Node.js / npm / yarn
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json # Optional: some prefer to commit this, others don't
+# yarn.lock # Optional: commit if using yarn v1
+
+# Frontend specific (React/Vue)
+# .DS_Store (macOS)
+# .env.local
+# .env.*.local
+# build/ (often used by frontend builds, covered by **/build/)
+# dist/ (often used by frontend/Node.js builds)
+**/dist/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*~
