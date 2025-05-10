@@ -41,6 +41,8 @@ services:
     command: -s /app/examples/person-schema.json -kc /app/examples/kafka-config-docker.properties -n 1000 -b 100 -i 1000
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      # Add JVM options to fix Snappy compression issues with Java 21
+      JAVA_OPTS: "--add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/jdk.internal.access=ALL-UNNAMED --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED"
 
   # Optional: Kafka UI for monitoring
   kafka-ui:
