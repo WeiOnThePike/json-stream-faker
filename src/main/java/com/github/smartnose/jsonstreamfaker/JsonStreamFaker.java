@@ -32,6 +32,9 @@ public class JsonStreamFaker implements Callable<Integer> {
     @Option(names = {"-o", "--output"}, description = "Output file path (if not sending to Kafka)")
     private File outputFile;
 
+    @Option(names = {"--auto-create-topic"}, description = "Automatically create Kafka topic if it doesn't exist", defaultValue = "true")
+    private boolean autoCreateTopic;
+
     public static void main(String[] args) {
         int exitCode = new CommandLine(new JsonStreamFaker()).execute(args);
         System.exit(exitCode);
@@ -50,7 +53,7 @@ public class JsonStreamFaker implements Callable<Integer> {
             // Create the data sink (Kafka or file)
             DataSink dataSink;
             if (kafkaConfigFile != null) {
-                dataSink = new KafkaDataSink(kafkaConfigFile, batchSize, intervalMs);
+                dataSink = new KafkaDataSink(kafkaConfigFile, batchSize, intervalMs, autoCreateTopic);
             } else if (outputFile != null) {
                 dataSink = new FileDataSink(outputFile);
             } else {

@@ -38,7 +38,7 @@ services:
       - kafka
     volumes:
       - ./:/app/examples
-    command: -s /app/examples/person-schema.json -kc /app/examples/kafka-config.properties -n 1000 -b 100 -i 1000
+    command: -s /app/examples/person-schema.json -kc /app/examples/kafka-config-docker.properties -n 1000 -b 100 -i 1000
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
 

@@ -1,5 +1,9 @@
 package com.github.smartnose.jsonstreamfaker;
 
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.clients.admin.ListTopicsResult;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -11,8 +15,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,13 +36,37 @@ public class KafkaDataSink implements DataSink {
     private final int intervalMs;
     private final List<JSONObject> batch;
     private final ScheduledExecutorService scheduler;
+    private final boolean autoCreateTopic;
+    private final short replicationFactor;
+    private final int numPartitions;
     
+    /**
+     * Creates a Kafka data sink with automatic topic creation enabled
+     */
     public KafkaDataSink(File kafkaConfigFile, int batchSize, int intervalMs) throws IOException {
+        this(kafkaConfigFile, batchSize, intervalMs, true);
+    }
+    
+    /**
+     * Creates a Kafka data sink with configurable topic creation behavior
+     *
+     * @param kafkaConfigFile The Kafka configuration file
+     * @param batchSize The number of messages to batch before sending
+     * @param intervalMs The maximum interval between batch sends
+     * @param autoCreateTopic Whether to automatically create the topic if it doesn't exist
+     * @throws IOException If there is an error reading the config file or connecting to Kafka
+     */
+    public KafkaDataSink(File kafkaConfigFile, int batchSize, int intervalMs, boolean autoCreateTopic) throws IOException {
         Properties props = new Properties();
         props.load(new FileInputStream(kafkaConfigFile));
         
         // Extract topic from properties or use default
         this.topic = props.getProperty("topic", "json-faker-data");
+        this.autoCreateTopic = autoCreateTopic;
+        
+        // Get topic configuration if specified
+        this.replicationFactor = Short.parseShort(props.getProperty("topic.replication.factor", "1"));
+        this.numPartitions = Integer.parseInt(props.getProperty("topic.num.partitions", "1"));
         
         // Ensure required properties are set
         if (!props.containsKey("bootstrap.servers")) {
@@ -49,6 +79,16 @@ public class KafkaDataSink implements DataSink {
         }
         if (!props.containsKey("value.serializer")) {
             props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        }
+        
+        // Check if topic exists and create it if needed
+        if (!topicExists(props, topic)) {
+            if (autoCreateTopic) {
+                createTopic(props, topic, numPartitions, replicationFactor);
+                logger.info("Created Kafka topic: {}", topic);
+            } else {
+                throw new IOException("Kafka topic '" + topic + "' does not exist and auto-creation is disabled");
+            }
         }
         
         this.producer = new KafkaProducer<>(props);
@@ -111,5 +151,25 @@ public class KafkaDataSink implements DataSink {
         
         flush();
         producer.close();
+    }
+    
+    private boolean topicExists(Properties props, String topic) throws IOException {
+        try (AdminClient adminClient = AdminClient.create(props)) {
+            ListTopicsResult topics = adminClient.listTopics();
+            Set<String> names = topics.names().get();
+            return names.contains(topic);
+        } catch (InterruptedException | ExecutionException e) {
+            throw new IOException("Error checking if topic exists", e);
+        }
+    }
+    
+    private void createTopic(Properties props, String topic, int numPartitions, short replicationFactor) throws IOException {
+        try (AdminClient adminClient = AdminClient.create(props)) {
+            NewTopic newTopic = new NewTopic(topic, numPartitions, replicationFactor);
+            CreateTopicsResult result = adminClient.createTopics(Collections.singleton(newTopic));
+            result.all().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new IOException("Error creating topic", e);
+        }
     }
 }
