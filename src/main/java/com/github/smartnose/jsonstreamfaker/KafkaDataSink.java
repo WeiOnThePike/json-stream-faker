@@ -124,8 +124,8 @@ public class KafkaDataSink implements DataSink {
                 producer.send(record).get();
             }
             
-            batch.clear();
             logger.info("Sent batch of {} messages to Kafka topic {}", batch.size(), topic);
+            batch.clear();
         } catch (InterruptedException | ExecutionException e) {
             logger.error("Error sending batch to Kafka", e);
             Thread.currentThread().interrupt();
