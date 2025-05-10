@@ -17,10 +17,10 @@ public class JsonStreamFaker implements Callable<Integer> {
     @Option(names = {"-kc", "--kafka-config"}, description = "Kafka client configuration file path")
     private File kafkaConfigFile;
 
-    @Option(names = {"-n", "--max-messages"}, description = "Maximum number of messages to generate")
+    @Option(names = {"-n", "--max-messages"}, description = "Maximum number of messages to generate (default: unlimited)")
     private Long maxMessages;
 
-    @Option(names = {"-t", "--max-time"}, description = "Maximum time to run in seconds")
+    @Option(names = {"-t", "--max-time"}, description = "Maximum time to run in seconds (default: unlimited)")
     private Long maxTimeInSeconds;
 
     @Option(names = {"-b", "--batch-size"}, description = "Batch size for Kafka messages", defaultValue = "100")
