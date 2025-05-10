@@ -52,7 +52,7 @@ public class GenerationController {
                 logger.info("Will generate for up to {} seconds", maxTimeInSeconds);
             }
             if (maxMessages == null && maxTimeInSeconds == null) {
-                logger.info("No stopping criteria specified, will run indefinitely until interrupted");
+                logger.info("Running in unlimited mode - will generate messages indefinitely until interrupted");
             }
             
             boolean shouldContinue = true;

@@ -111,6 +111,46 @@ docker-compose up
 
 You can customize the command parameters and environment variables as needed. This setup will generate 1000 fake person records and send them to Kafka.
 
+## Troubleshooting
+
+### Snappy Compression Issues with Java 21
+
+If you encounter errors related to Snappy compression when using Java 21, such as:
+
+```
+java.lang.NoClassDefFoundError: Could not initialize class org.xerial.snappy.pure.UnsafeUtil
+```
+
+This is due to compatibility issues between the Snappy compression library and Java 21's security restrictions. There are two ways to fix this:
+
+#### Option 1: Use a different compression type
+
+Change the `compression.type` in your Kafka configuration file from `snappy` to `gzip`:
+
+```properties
+# In kafka-config.properties or kafka-config-docker.properties
+compression.type=gzip
+```
+
+#### Option 2: Use JVM flags to allow unsafe access
+
+Add the following JVM flags to allow the Snappy library to access memory directly:
+
+```
+--add-opens=java.base/java.nio=ALL-UNNAMED
+--add-opens=java.base/jdk.internal.access=ALL-UNNAMED
+--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED
+```
+
+Example usage with Docker:
+
+```bash
+docker run -v $(pwd)/examples:/app/examples jsonstreamfaker:latest \
+  -s /app/examples/person-schema.json \
+  -kc /app/examples/kafka-config.properties \
+  --java-opts="--add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/jdk.internal.access=ALL-UNNAMED --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED"
+```
+
 ## Publishing Docker Images
 
 The project includes a script for publishing the Docker image to either a local or remote repository.

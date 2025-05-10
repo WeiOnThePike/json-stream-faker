@@ -17,10 +17,10 @@ public class JsonStreamFaker implements Callable<Integer> {
     @Option(names = {"-kc", "--kafka-config"}, description = "Kafka client configuration file path")
     private File kafkaConfigFile;
 
-    @Option(names = {"-n", "--max-messages"}, description = "Maximum number of messages to generate")
+    @Option(names = {"-n", "--max-messages"}, description = "Maximum number of messages to generate (default: unlimited)")
     private Long maxMessages;
 
-    @Option(names = {"-t", "--max-time"}, description = "Maximum time to run in seconds")
+    @Option(names = {"-t", "--max-time"}, description = "Maximum time to run in seconds (default: unlimited)")
     private Long maxTimeInSeconds;
 
     @Option(names = {"-b", "--batch-size"}, description = "Batch size for Kafka messages", defaultValue = "100")
@@ -31,6 +31,9 @@ public class JsonStreamFaker implements Callable<Integer> {
 
     @Option(names = {"-o", "--output"}, description = "Output file path (if not sending to Kafka)")
     private File outputFile;
+
+    @Option(names = {"--auto-create-topic"}, description = "Automatically create Kafka topic if it doesn't exist", defaultValue = "true")
+    private boolean autoCreateTopic;
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new JsonStreamFaker()).execute(args);
@@ -50,7 +53,7 @@ public class JsonStreamFaker implements Callable<Integer> {
             // Create the data sink (Kafka or file)
             DataSink dataSink;
             if (kafkaConfigFile != null) {
-                dataSink = new KafkaDataSink(kafkaConfigFile, batchSize, intervalMs);
+                dataSink = new KafkaDataSink(kafkaConfigFile, batchSize, intervalMs, autoCreateTopic);
             } else if (outputFile != null) {
                 dataSink = new FileDataSink(outputFile);
             } else {
