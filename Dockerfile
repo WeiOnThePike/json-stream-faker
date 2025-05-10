@@ -1,4 +1,5 @@
-FROM eclipse-temurin:17-jre-alpine
+# Use Java 21 instead of Java 17 to match the compilation version
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
